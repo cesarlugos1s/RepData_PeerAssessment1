@@ -1,0 +1,224 @@
+---
+title: "ReproducibleResearch.Rmd"
+author: "Cesar Lugo"
+date: "June 21, 2016"
+output: html_document
+---
+
+
+## Loading and preprocessing the data
+
+For this analysis, the data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+
+In this section we load the source data once obtained from this URL:
+
+https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
+
+and copied to the current working directory.
+
+The following is the R code to load and preprocess the data
+
+```{r, echo=TRUE}
+
+activity <- read.csv(file = "activity.csv", header = TRUE)
+#Convert the date column into a actual Date class column
+activity$date <- as.Date(activity$date, format = "%Y-%m-%d")
+
+activityComplete <- activity[complete.cases(activity),]
+
+
+```
+
+
+
+## What is mean total number of steps taken per day?
+
+```{r, echo=TRUE}
+# We are using the ggplot library to make the all the plots
+library(ggplot2)
+
+#Summarize steps in activity by day
+activityByDay <- aggregate(activityComplete$steps, by = list(day = activityComplete$date), FUN = sum)
+
+#Rename summarized colum names
+colnames(activityByDay)[2] <- "steps.total"
+
+#Plot the histogram of average steps taken per day
+plotByDay <- qplot(data = activityByDay, x = steps.total, geom = "histogram", main = "Histogram of total steps each day", xlab = "Total Steps", fill=I("blue")) +
+      theme_bw()
+
+plotByDay
+
+
+```
+
+### Mean of the total number of steps taken per day
+
+```{r, echo=TRUE}
+
+
+#Calculate and report the mean of the total number of steps taken per day
+
+meanStepsByDay <- aggregate(activityComplete$steps, by = list(day = activityComplete$date), FUN = mean)
+
+#Rename summarized colum names
+colnames(meanStepsByDay)[2] <- "steps.mean"
+
+meanStepsByDay
+
+```
+
+
+### Median of the total number of steps taken per day
+
+```{r, echo=TRUE}
+
+#Calculate and report the median of the total number of steps taken per day
+
+
+medianStepsByDay <- aggregate(activityComplete$steps, by = list(day = activityComplete$date), FUN = median)
+
+#Rename summarized colum names
+colnames(medianStepsByDay)[2] <- "steps.median"
+
+medianStepsByDay
+
+```
+
+
+
+## What is the average daily activity pattern?
+
+###Time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+
+
+```{r, echo=TRUE}
+
+meanStepsByInterval <- aggregate(activityComplete$steps, by = list(myInterval = activityComplete$interval), FUN = mean)
+
+#Rename summarized colum names
+colnames(meanStepsByInterval)[2] <- "steps.median"
+
+plot(meanStepsByInterval$myInterval, meanStepsByInterval$steps.median, type="l", xlab= "Interval", ylab= "Mean of steps per day", col="green", lwd=2, main = "Average daily activity pattern - Mean steps per Interval" ) +
+      theme_bw()
+
+```
+
+
+###Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?. Its the following under the column labeled "myInterval" here:
+
+```{r, echo=TRUE}
+
+meanStepsByInterval[meanStepsByInterval$steps.median == max(meanStepsByInterval$steps.median),]
+
+```
+
+
+## Imputing missing values
+
+### Calculate and report the total number of missing values in the dataset
+
+```{r, echo=TRUE}
+sum(!(complete.cases(activity)))
+
+```
+
+
+### Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+```{r, echo=TRUE}
+activityFilledIn <- activity
+
+for(i in 1:ncol(activityFilledIn)){
+  activityFilledIn[is.na(activityFilledIn[,i]), i] <- mean(activityFilledIn[,i], na.rm = TRUE)
+}
+
+```
+
+
+### Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+Yes, the total steps per day increased when the null values are filled in, and we now have median values for some of the activity observations.
+
+```{r, echo=TRUE}
+
+#Summarize steps in activityFilledIn by day
+activityFilledInByDay <- aggregate(activityFilledIn$steps, by = list(day = activityFilledIn$date), FUN = sum)
+
+#Rename summarized colum names
+colnames(activityFilledInByDay)[2] <- "steps.total"
+
+#Plot the histogram of average steps taken per day
+plotByDay <- qplot(data = activityFilledInByDay, x = steps.total, geom = "histogram", main = "Histogram of total steps each day", xlab = "Total Steps", fill=I("blue")) +
+      theme_bw()
+
+plotByDay
+
+```
+
+
+```{r, echo=TRUE}
+
+
+#Calculate and report the mean of the total number of steps taken per day wih the data filled in
+
+meanStepsByDayFilledIn <- aggregate(activityFilledIn$steps, by = list(day = activityFilledIn$date), FUN = mean)
+
+#Rename summarized colum names
+colnames(meanStepsByDayFilledIn)[2] <- "steps.mean"
+
+meanStepsByDayFilledIn
+
+```
+
+
+
+```{r, echo=TRUE}
+
+#Calculate and report the median of the total number of steps taken per daywith the data filled in
+
+
+medianStepsByDayFilledIn <- aggregate(activityFilledIn$steps, by = list(day = activityFilledIn$date), FUN = median)
+
+#Rename summarized colum names
+colnames(medianStepsByDayFilledIn)[2] <- "steps.median"
+
+medianStepsByDayFilledIn
+
+```
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+### Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+```{r, echo=TRUE}
+
+myWeekdays <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
+activityFilledIn$dateType <- c('weekend', 'weekday')[(weekdays(activityFilledIn$date) %in% myWeekdays)+1L]
+
+```
+
+## Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+
+```{r, echo=TRUE}
+#Summarize steps in activity by day
+
+activityFilledInbyDateType <- aggregate(activityFilledIn$steps, by = list(dateType = activityFilledIn$dateType, interval = activityFilledIn$interval ), FUN = mean)
+
+#Rename summarized colum names
+colnames(activityFilledInbyDateType)[3] <- "steps.mean"
+
+myplot <- qplot(x = interval, y = steps.mean, data = activityFilledInbyDateType, color = dateType) +
+    ylab("Average of steps taken") +
+    xlab("5-minute interval") +
+    ggtitle("Average steps taken per interval across all weekday days or weekend") +
+    geom_line() +
+    facet_wrap( ~ dateType, ncol=1) +
+    theme_bw()
+
+  myplot
+
+```
+
