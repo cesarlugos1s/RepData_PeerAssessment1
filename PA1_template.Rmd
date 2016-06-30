@@ -49,13 +49,13 @@ plotByDay <- qplot(data = activityByDay, x = steps.total, geom = "histogram", ma
 
 plotByDay
 
-
 ```
 
 ### Mean of the total number of steps taken per day
 
 ```{r, echo=TRUE}
 
+library(knitr)
 
 #Calculate and report the mean of the total number of steps taken per day
 
@@ -64,7 +64,9 @@ meanStepsByDay <- aggregate(activityComplete$steps, by = list(day = activityComp
 #Rename summarized colum names
 colnames(meanStepsByDay)[2] <- "steps.mean"
 
-meanStepsByDay
+kable(meanStepsByDay)
+
+mean(activityComplete$steps)
 
 ```
 
@@ -72,6 +74,8 @@ meanStepsByDay
 ### Median of the total number of steps taken per day
 
 ```{r, echo=TRUE}
+
+library(knitr)
 
 #Calculate and report the median of the total number of steps taken per day
 
@@ -81,7 +85,9 @@ medianStepsByDay <- aggregate(activityComplete$steps, by = list(day = activityCo
 #Rename summarized colum names
 colnames(medianStepsByDay)[2] <- "steps.median"
 
-medianStepsByDay
+kable(medianStepsByDay)
+
+median(activityComplete$steps)
 
 ```
 
