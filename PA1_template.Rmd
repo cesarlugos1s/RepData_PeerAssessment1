@@ -165,6 +165,7 @@ plotByDay
 
 ```{r, echo=TRUE}
 
+library(knitr)
 
 #Calculate and report the mean of the total number of steps taken per day wih the data filled in
 
@@ -173,13 +174,17 @@ meanStepsByDayFilledIn <- aggregate(activityFilledIn$steps, by = list(day = acti
 #Rename summarized colum names
 colnames(meanStepsByDayFilledIn)[2] <- "steps.mean"
 
-meanStepsByDayFilledIn
+kable(meanStepsByDayFilledIn)
+
+mean(activityFilledIn$steps)
 
 ```
 
 
 
 ```{r, echo=TRUE}
+
+library(knitr)
 
 #Calculate and report the median of the total number of steps taken per daywith the data filled in
 
@@ -189,7 +194,9 @@ medianStepsByDayFilledIn <- aggregate(activityFilledIn$steps, by = list(day = ac
 #Rename summarized colum names
 colnames(medianStepsByDayFilledIn)[2] <- "steps.median"
 
-medianStepsByDayFilledIn
+kable(medianStepsByDayFilledIn)
+
+median(activityFilledIn$steps)
 
 ```
 
